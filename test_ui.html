@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Планировщик маршрута — GNN + OpenStreetMap</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background-color: #f5f7fa;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      background-color: #2e7d32;
+      color: white;
+      padding: 16px 20px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 600;
+      box-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
+      position: relative;
+    }
+
+    /* Main content */
+    .main-content {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 24px;
+    }
+    @media (max-width: 1100px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Общая рамка для всех блоков */
+    .map-section,
+    .card {
+      background: white;
+      border: 2px solid #ffcc00;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+      margin-top: 5px;
+    }
+
+    .map-section {
+      height: 60vh;
+      padding: 0;
+      overflow: hidden;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    .form-section {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: #333;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: #555;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid #ffcc00;
+      border-radius: 6px;
+      font-size: 14px;
+      background-color: white;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #ffcc00;
+      box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.3);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #2e7d32;
+      color: white;
+      border: 2px solid #ffcc00;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background-color: #1b5e20;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      border-color: #aaa;
+      cursor: not-allowed;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      color: #555;
+      font-weight: 600;
+    }
+    tbody tr:hover {
+      background-color: #f9fafc;
+      cursor: pointer;
+    }
+    .empty-row td {
+      color: #999;
+      font-style: italic;
+      text-align: center;
+    }
+
+    #routeResult {
+      margin-top: 12px;
+      min-height: 24px;
+      font-weight: 600;
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+      display: flex;
+      width: 100%;
+      max-width: 320px;
+      height: 40px;
+      background: white;
+      border: 2px solid #ffcc00;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .toggle-option {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .toggle-option.active {
+      background-color: #2e7d32;
+      color: white;
+    }
+
+    /* Footer */
+    footer {
+      background-color: #2e7d32;
+      color: white;
+      text-align: center;
+      padding: 12px;
+      font-size: 14px;
+      margin-top: auto;
+      box-shadow: 0 -4px 8px rgba(255, 215, 0, 0.4);
+    }
+
+    /* Плавное уведомление */
+    #notification {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+      width: 300px;
+      background: white;
+      border: 2px solid #ffcc00;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    #notification.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+    #notification .content {
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #2e7d32;
+      font-weight: 600;
+    }
+    #notification .progress-bar-container {
+      height: 4px;
+      width: 100%;
+      background: #e0e0e0;
+      position: relative;
+    }
+    #notification .progress-bar {
+      height: 100%;
+      width: 100%;
+      background: #2e7d32;
+      transition: width 10s linear;
+    }
+
+    /* Адрес в таблице — компактный */
+    td:nth-child(8) {
+      max-width: 150px;
+      word-break: break-word;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    Планировщик маршрута — GNN + OpenStreetMap
+  </header>
+
+  <div class="main-content">
+    <div class="container">
+      <div class="left-column">
+        <div class="map-section">
+          <div id="map"></div>
+        </div>
+
+        <div class="card">
+          <h2>Список клиентов</h2>
+          <table id="clientsTable">
+            <thead>
+              <tr>
+                <th>Шир.</th>
+                <th>Долг.</th>
+                <th>Раб. нач.</th>
+                <th>Раб. кон.</th>
+                <th>Обед нач.</th>
+                <th>Обед кон.</th>
+                <th>Уровень</th>
+                <th>Адрес объекта</th>
+              </tr>
+            </thead>
+            <tbody id="clientsList">
+              <tr class="empty-row">
+                <td colspan="8">Нет добавленных клиентов</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="card">
+          <h2>Добавить клиента</h2>
+
+          <div class="toggle-switch">
+            <div class="toggle-option active" data-mode="manual">Вручную</div>
+            <div class="toggle-option" data-mode="csv">Из CSV</div>
+          </div>
+
+          <form id="clientForm" style="display: block;">
+            <div class="form-group">
+              <label for="lat">Географическая широта</label>
+              <input type="number" step="any" id="lat" required placeholder="Например: 55.751244">
+            </div>
+            <div class="form-group">
+              <label for="lon">Географическая долгота</label>
+              <input type="number" step="any" id="lon" required placeholder="Например: 37.618423">
+            </div>
+            <div class="form-group">
+              <label for="address">Адрес объекта</label>
+              <input type="text" id="address" required placeholder="Например: Москва, Тверская 10">
+            </div>
+            <div class="form-group">
+              <label for="workStart">Время начала рабочего дня</label>
+              <input type="time" id="workStart" required value="09:00">
+            </div>
+            <div class="form-group">
+              <label for="workEnd">Время окончания рабочего дня</label>
+              <input type="time" id="workEnd" required value="18:00">
+            </div>
+            <div class="form-group">
+              <label for="lunchStart">Время начала обеда</label>
+              <input type="time" id="lunchStart" required value="12:00">
+            </div>
+            <div class="form-group">
+              <label for="lunchEnd">Время окончания обеда</label>
+              <input type="time" id="lunchEnd" required value="13:00">
+            </div>
+            <div class="form-group">
+              <label for="clientLevel">Уровень клиента</label>
+              <select id="clientLevel" required>
+                <option value="">— Выберите —</option>
+                <option value="Standart">Обычный</option>
+                <option value="VIP">VIP</option>
+              </select>
+            </div>
+            <button type="submit">Добавить на карту</button>
+          </form>
+
+          <div id="csvUploadSection" style="display: none; margin-top: 16px;">
+            <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
+              Поддерживается CSV из Excel (включая кодировку Windows-1251).
+            </p>
+            <input type="file" id="csvFile" accept=".csv" style="margin-bottom: 12px; width: 100%;">
+            <button type="button" id="uploadCsvBtn">Загрузить клиентов</button>
+          </div>
+        </div>
+
+        <!-- Выбор алгоритма -->
+        <div class="card">
+          <h2>Тип маршрута</h2>
+          <div class="toggle-switch">
+            <div class="toggle-option active" data-algo="gnn">GNN</div>
+            <div class="toggle-option" data-algo="tsp">Коммивояжёр</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Маршрут</h2>
+          <button id="buildRouteBtn" type="button" disabled>Построить маршрут</button>
+          <p id="routeResult"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 Планировщик маршрутов | GNN + OpenStreetMap
+  </footer>
+
+  <!-- Плавающее уведомление -->
+  <div id="notification">
+    <div class="content">✅ Маршрут успешно построен!</div>
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    const originalTitle = document.title;
+    const map = L.map('map').setView([55.751244, 37.618423], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    const redIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    const markers = [];
+    const clientsData = [];
+    const clientForm = document.getElementById('clientForm');
+    const csvUploadSection = document.getElementById('csvUploadSection');
+    const clientsList = document.getElementById('clientsList');
+    const buildRouteBtn = document.getElementById('buildRouteBtn');
+    const routeResult = document.getElementById('routeResult');
+    const csvFileInput = document.getElementById('csvFile');
+    const uploadCsvBtn = document.getElementById('uploadCsvBtn');
+    const notification = document.getElementById('notification');
+    const progressBar = document.getElementById('progressBar');
+
+    // --- Переключатель ввода данных ---
+    document.querySelectorAll('.toggle-option[data-mode]').forEach(option => {
+      option.addEventListener('click', () => {
+        document.querySelectorAll('.toggle-option[data-mode]').forEach(opt => opt.classList.remove('active'));
+        option.classList.add('active');
+        const mode = option.dataset.mode;
+        clientForm.style.display = mode === 'manual' ? 'block' : 'none';
+        csvUploadSection.style.display = mode === 'csv' ? 'block' : 'none';
+      });
+    });
+
+    // --- Переключатель алгоритма ---
+    let currentAlgorithm = 'gnn';
+    document.querySelectorAll('.toggle-option[data-algo]').forEach(option => {
+      option.addEventListener('click', () => {
+        document.querySelectorAll('.toggle-option[data-algo]').forEach(opt => opt.classList.remove('active'));
+        option.classList.add('active');
+        currentAlgorithm = option.dataset.algo;
+      });
+    });
+
+    function timeToMinutes(timeStr) {
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    // --- Ручной ввод ---
+    clientForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const lat = parseFloat(document.getElementById('lat').value);
+      const lon = parseFloat(document.getElementById('lon').value);
+      const address = document.getElementById('address').value.trim();
+      const workStart = document.getElementById('workStart').value;
+      const workEnd = document.getElementById('workEnd').value;
+      const lunchStart = document.getElementById('lunchStart').value;
+      const lunchEnd = document.getElementById('lunchEnd').value();
+      const clientLevel = document.getElementById('clientLevel').value;
+
+      if (!address) { alert('Пожалуйста, укажите адрес.'); return; }
+      if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+        alert('Пожалуйста, введите корректные координаты.');
+        return;
+      }
+      if (lunchStart >= lunchEnd || workStart >= workEnd) {
+        alert('Неверное время.');
+        return;
+      }
+
+      const levelText = clientLevel === 'VIP' ? 'VIP' : 'Обычный';
+      const is_vip = clientLevel === 'VIP' ? 1 : 0;
+
+      clientsData.push({
+        lat, lon, address,
+        is_vip,
+        work_start: timeToMinutes(workStart),
+        work_end: timeToMinutes(workEnd),
+        lunch_start: timeToMinutes(lunchStart),
+        lunch_end: timeToMinutes(lunchEnd)
+      });
+
+      const popupContent = `<b>Клиент (${levelText})</b><br>Адрес: ${address}<br>Широта: ${lat.toFixed(6)}<br>Долгота: ${lon.toFixed(6)}<br>Рабочий день: ${workStart}–${workEnd}<br>Обед: ${lunchStart}–${lunchEnd}`;
+      const marker = L.marker([lat, lon], { icon: redIcon }).addTo(map).bindPopup(popupContent);
+      markers.push(marker);
+
+      renderClientsTable();
+      map.setView([lat, lon], 13);
+      clientForm.reset();
+      buildRouteBtn.disabled = clientsData.length < 2;
+    });
+
+    // --- Отображение клиентов в таблице ---
+    function renderClientsTable() {
+      clientsList.innerHTML = '';
+      if (clientsData.length === 0) {
+        clientsList.innerHTML = '<tr class="empty-row"><td colspan="8">Нет добавленных клиентов</td></tr>';
+        return;
+      }
+
+      clientsData.forEach((client, index) => {
+        const workStart = String(Math.floor(client.work_start / 60)).padStart(2, '0') + ':' + String(client.work_start % 60).padStart(2, '0');
+        const workEnd = String(Math.floor(client.work_end / 60)).padStart(2, '0') + ':' + String(client.work_end % 60).padStart(2, '0');
+        const lunchStart = String(Math.floor(client.lunch_start / 60)).padStart(2, '0') + ':' + String(client.lunch_start % 60).padStart(2, '0');
+        const lunchEnd = String(Math.floor(client.lunch_end / 60)).padStart(2, '0') + ':' + String(client.lunch_end % 60).padStart(2, '0');
+        const levelText = client.is_vip ? 'VIP' : 'Обычный';
+
+        const row = document.createElement('tr');
+        row.dataset.index = index;
+        row.innerHTML = `
+          <td>${client.lat.toFixed(6)}</td>
+          <td>${client.lon.toFixed(6)}</td>
+          <td>${workStart}</td>
+          <td>${workEnd}</td>
+          <td>${lunchStart}</td>
+          <td>${lunchEnd}</td>
+          <td>${levelText}</td>
+          <td>${client.address}</td>
+        `;
+        clientsList.appendChild(row);
+      });
+
+      // Добавляем обработчик клика на строки
+      clientsList.querySelectorAll('tr').forEach(row => {
+        row.addEventListener('click', () => {
+          const index = parseInt(row.dataset.index);
+          if (isNaN(index)) return;
+
+          if (confirm(`Удалить клиента?\nАдрес: ${clientsData[index].address}`)) {
+            // Удаляем маркер с карты
+            if (markers[index]) {
+              map.removeLayer(markers[index]);
+            }
+            // Удаляем из массивов
+            clientsData.splice(index, 1);
+            markers.splice(index, 1);
+            // Перерисовываем таблицу
+            renderClientsTable();
+            // Обновляем кнопку
+            buildRouteBtn.disabled = clientsData.length < 2;
+          }
+        });
+      });
+    }
+
+    // --- Загрузка CSV: данные берутся по индексам, без проверки заголовков ---
+    uploadCsvBtn.addEventListener('click', async () => {
+      const file = csvFileInput.files[0];
+      if (!file) { alert('Выберите CSV-файл.'); return; }
+
+      const arrayBuffer = await file.arrayBuffer();
+      let text;
+      try {
+        const decoder = new TextDecoder('windows-1251');
+        text = decoder.decode(arrayBuffer);
+      } catch (e) {
+        const decoder = new TextDecoder('utf-8');
+        text = decoder.decode(arrayBuffer);
+      }
+
+      const lines = text.trim().split('\n');
+      if (lines.length < 2) { alert('Файл пуст или содержит только заголовок.'); return; }
+
+      let newClients = [];
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        const row = [];
+        let current = '';
+        let inQuotes = false;
+
+        for (let j = 0; j < line.length; j++) {
+          const char = line[j];
+          if (char === '"' && !inQuotes) {
+            inQuotes = true;
+          } else if (char === '"' && inQuotes && line[j + 1] === '"') {
+            current += '"';
+            j++;
+          } else if (char === '"' && inQuotes) {
+            inQuotes = false;
+          } else if (char === ',' && !inQuotes) {
+            row.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        row.push(current.trim());
+
+        if (row.length < 9) continue;
+
+        let address = row[1];
+        const lat = parseFloat(row[2]);
+        const lon = parseFloat(row[3]);
+        const ws = row[4];
+        const we = row[5];
+        const ls = row[6];
+        const le = row[7];
+        let levelStr = row[8];
+
+        if (address.startsWith('"') && address.endsWith('"')) {
+          address = address.slice(1, -1);
+        }
+        if (levelStr.startsWith('"') && levelStr.endsWith('"')) {
+          levelStr = levelStr.slice(1, -1);
+        }
+
+        if (!address || isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) continue;
+        if (ls >= le || ws >= we) continue;
+
+        let levelText = 'Обычный';
+        let is_vip = 0;
+        if (levelStr === 'VIP') {
+          levelText = 'VIP';
+          is_vip = 1;
+        }
+
+        newClients.push({
+          lat, lon, address,
+          workStart: ws,
+          workEnd: we,
+          lunchStart: ls,
+          lunchEnd: le,
+          levelText,
+          is_vip
+        });
+      }
+
+      if (newClients.length === 0) {
+        alert('Ни один клиент не был добавлен.');
+        return;
+      }
+
+      newClients.forEach(c => {
+        clientsData.push({
+          lat: c.lat,
+          lon: c.lon,
+          address: c.address,
+          is_vip: c.is_vip,
+          work_start: timeToMinutes(c.workStart),
+          work_end: timeToMinutes(c.workEnd),
+          lunch_start: timeToMinutes(c.lunchStart),
+          lunch_end: timeToMinutes(c.lunchEnd)
+        });
+
+        const popup = `<b>Клиент (${c.levelText})</b><br>Адрес: ${c.address}<br>Широта: ${c.lat.toFixed(6)}<br>Долгота: ${c.lon.toFixed(6)}<br>Рабочий день: ${c.workStart}–${c.workEnd}<br>Обед: ${c.lunchStart}–${c.lunchEnd}`;
+        const m = L.marker([c.lat, c.lon], { icon: redIcon }).addTo(map).bindPopup(popup);
+        markers.push(m);
+      });
+
+      renderClientsTable();
+      const last = newClients[newClients.length - 1];
+      map.setView([last.lat, last.lon], 13);
+      alert(`✅ Успешно добавлено клиентов: ${newClients.length}`);
+    });
+
+    // --- Очистка маршрута ---
+    function clearRoute() {
+      if (window.currentRouteLayers) window.currentRouteLayers.forEach(l => map.removeLayer(l));
+      if (window.numberedMarkers) window.numberedMarkers.forEach(m => map.removeLayer(m));
+      window.currentRouteLayers = [];
+      window.numberedMarkers = [];
+    }
+
+    // --- Уведомление ---
+    function showSuccessNotification(message = '✅ Маршрут успешно построен!') {
+      document.title = message;
+      notification.querySelector('.content').textContent = message;
+
+      progressBar.style.transition = 'none';
+      progressBar.style.width = '100%';
+      void progressBar.offsetWidth;
+      progressBar.style.transition = 'width 10s linear';
+      progressBar.style.width = '0%';
+
+      notification.classList.add('show');
+
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          document.title = originalTitle;
+        }, 400);
+      }, 10000);
+    }
+
+    // --- Построение маршрута ---
+    buildRouteBtn.addEventListener('click', async () => {
+      routeResult.textContent = 'Расчёт маршрута...';
+      routeResult.style.color = '#2e7d32';
+      clearRoute();
+
+      const endpoint = currentAlgorithm === 'gnn' ? '/route' : '/comy_voyager';
+      const algoName = currentAlgorithm === 'gnn' ? 'GNN' : 'Коммивояжёр';
+
+      try {
+        const routeRes = await fetch(`http://127.0.0.1:8080${endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nodes: clientsData })
+        });
+        if (!routeRes.ok) throw new Error(`${algoName}: ${await routeRes.text()}`);
+        const { route, total_time_minutes } = await routeRes.json();
+
+        const geomRes = await fetch('http://127.0.0.1:8080/route-geometry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nodes: clientsData })
+        });
+        if (!geomRes.ok) throw new Error(`Геометрия: ${await geomRes.text()}`);
+        const geometrySegments = await geomRes.json();
+
+        window.currentRouteLayers = geometrySegments.map(seg => {
+          const pl = L.polyline(seg, { color: '#2e7d32', weight: 5, opacity: 0.9 }).addTo(map);
+          return pl;
+        });
+
+        window.numberedMarkers = route.map((nodeIdx, order) => {
+          const { lat, lon } = clientsData[nodeIdx];
+          const icon = L.divIcon({
+            html: `<div style="background:#2e7d32;color:white;font-weight:bold;width:24px;height:24px;border:2px solid #ffcc00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;">${order}</div>`,
+            iconSize: [24,24],
+            className: ''
+          });
+          return L.marker([lat, lon], { icon }).addTo(map);
+        });
+
+        if (window.currentRouteLayers.length > 0) {
+          const bounds = L.latLngBounds([]);
+          window.currentRouteLayers.forEach(pl => bounds.extend(pl.getBounds()));
+          map.fitBounds(bounds);
+        }
+
+        routeResult.innerHTML = `✅ Маршрут (${algoName}) построен!<br>Время в пути: <strong>${total_time_minutes.toFixed(1)} мин</strong>`;
+        routeResult.style.color = '#2e7d32';
+
+        showSuccessNotification(`✅ Маршрут (${algoName}) успешно построен!`);
+
+      } catch (error) {
+        console.error('Ошибка:', error);
+        routeResult.textContent = `❌ Ошибка: ${error.message}`;
+        routeResult.style.color = '#d32f2f';
+      }
+    });
+  </script>
+
+</body>
+</html>
