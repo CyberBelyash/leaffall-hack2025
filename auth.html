@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Вход или регистрация — GNN Планировщик</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background-color: #f5f7fa;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background-color: #2e7d32;
+      color: white;
+      padding: 16px 20px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 600;
+      box-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
+    }
+    .main-content {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .auth-card {
+      background: white;
+      border: 2px solid #ffcc00;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      padding: 30px;
+      width: 100%;
+      max-width: 400px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 24px;
+      color: #2e7d32;
+      font-size: 22px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: #555;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ffcc00;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+    input:focus {
+      outline: none;
+      border-color: #ffcc00;
+      box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.3);
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #2e7d32;
+      color: white;
+      border: 2px solid #ffcc00;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background-color: #1b5e20;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      border-color: #aaa;
+      cursor: not-allowed;
+    }
+    .switch-form {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+    .switch-form a {
+      color: #2e7d32;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    footer {
+      background-color: #2e7d32;
+      color: white;
+      text-align: center;
+      padding: 12px;
+      font-size: 14px;
+      margin-top: auto;
+      box-shadow: 0 -4px 8px rgba(255, 215, 0, 0.4);
+    }
+    /* Уведомление */
+    #notification {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+      width: 300px;
+      background: white;
+      border: 2px solid #ffcc00;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    #notification.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+    #notification.error {
+      color: #d32f2f;
+    }
+    #notification.success {
+      color: #2e7d32;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    Вход или регистрация
+  </header>
+  <div class="main-content">
+    <div class="auth-card">
+      <h2 id="formTitle">Войти в аккаунт</h2>
+      <form id="authForm">
+        <div class="form-group">
+          <label for="email">Электронная почта</label>
+          <input type="email" id="email" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="password">Пароль</label>
+          <input type="password" id="password" required autocomplete="current-password">
+        </div>
+        <div id="nameField" class="form-group" style="display: none;">
+          <label for="name">Имя (для регистрации)</label>
+          <input type="text" id="name" autocomplete="name">
+        </div>
+        <button type="submit" id="submitBtn">Войти</button>
+      </form>
+      <div class="switch-form">
+        <span id="switchText">Нет аккаунта? </span>
+        <a id="toggleAuth">Зарегистрироваться</a>
+      </div>
+    </div>
+  </div>
+  <footer>
+    © 2025 Планировщик маршрутов | GNN + OpenStreetMap
+  </footer>
+  <div id="notification"></div>
+  <script>
+    const originalTitle = document.title;
+    const form = document.getElementById('authForm');
+    const formTitle = document.getElementById('formTitle');
+    const submitBtn = document.getElementById('submitBtn');
+    const toggleLink = document.getElementById('toggleAuth');
+    const switchText = document.getElementById('switchText');
+    const nameField = document.getElementById('nameField');
+    const notification = document.getElementById('notification');
+    let isLogin = true;
+    
+    function showNotification(message, isSuccess = true) {
+      notification.textContent = message;
+      notification.className = `show ${isSuccess ? 'success' : 'error'}`;
+      document.title = message;
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => { document.title = originalTitle; }, 400);
+      }, 5000);
+    }
+    
+    toggleLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      isLogin = !isLogin;
+      if (isLogin) {
+        formTitle.textContent = 'Войти в аккаунт';
+        submitBtn.textContent = 'Войти';
+        switchText.innerHTML = 'Нет аккаунта? ';
+        nameField.style.display = 'none';
+      } else {
+        formTitle.textContent = 'Создать аккаунт';
+        submitBtn.textContent = 'Зарегистрироваться';
+        switchText.innerHTML = 'Уже есть аккаунт? ';
+        nameField.style.display = 'block';
+      }
+      form.reset();
+    });
+    
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const name = document.getElementById('name')?.value.trim() || '';
+      
+      if (!isLogin && !name) {
+        showNotification('Укажите имя', false);
+        return;
+      }
+      
+      const url = isLogin ? 'http://127.0.0.1:8080/login' : 'http://127.0.0.1:8080/register';
+      const payload = isLogin
+        ? { email, password }
+        : { email, password, name };
+      
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('authToken', data.token);
+          showNotification(isLogin ? '✅ Вход выполнен!' : '✅ Аккаунт создан!');
+          setTimeout(() => {
+            window.location.href = 'test_ui.html';
+          }, 1500);
+        } else {
+          showNotification(`❌ ${data.detail || 'Ошибка авторизации'}`, false);
+        }
+      } catch (err) {
+        console.error(err);
+        showNotification('❌ Не удалось подключиться к серверу', false);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -19,25 +19,27 @@
       flex-direction: column;
       min-height: 100vh;
     }
-
-    /* Header */
     header {
       background-color: #2e7d32;
       color: white;
-      padding: 16px 20px;
+      padding: 16px 0;
       text-align: center;
       font-size: 20px;
       font-weight: 600;
       box-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
-      position: relative;
     }
-
-    /* Main content */
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
     .main-content {
       flex: 1;
       padding: 20px;
     }
-
     .container {
       max-width: 1400px;
       margin: 0 auto;
@@ -46,14 +48,9 @@
       gap: 24px;
     }
     @media (max-width: 1100px) {
-      .container {
-        grid-template-columns: 1fr;
-      }
+      .container { grid-template-columns: 1fr; }
     }
-
-    /* Общая рамка для всех блоков */
-    .map-section,
-    .card {
+    .map-section, .card {
       background: white;
       border: 2px solid #ffcc00;
       border-radius: 12px;
@@ -61,38 +58,12 @@
       padding: 20px;
       margin-top: 5px;
     }
-
-    .map-section {
-      height: 60vh;
-      padding: 0;
-      overflow: hidden;
-    }
-    #map {
-      width: 100%;
-      height: 100%;
-    }
-
-    .form-section {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    h2 {
-      font-size: 18px;
-      margin-bottom: 16px;
-      color: #333;
-    }
-
-    .form-group {
-      margin-bottom: 14px;
-    }
-    label {
-      display: block;
-      font-size: 14px;
-      margin-bottom: 6px;
-      color: #555;
-    }
+    .map-section { height: 60vh; padding: 0; overflow: hidden; }
+    #map { width: 100%; height: 100%; }
+    .form-section { display: flex; flex-direction: column; gap: 24px; }
+    h2 { font-size: 18px; margin-bottom: 16px; color: #333; }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 14px; margin-bottom: 6px; color: #555; }
     input, select {
       width: 100%;
       padding: 10px 12px;
@@ -106,7 +77,6 @@
       border-color: #ffcc00;
       box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.3);
     }
-
     button {
       width: 100%;
       padding: 12px;
@@ -119,46 +89,40 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-    button:hover {
-      background-color: #1b5e20;
-    }
+    button:hover { background-color: #1b5e20; }
     button:disabled {
       background-color: #cccccc;
       border-color: #aaa;
       cursor: not-allowed;
     }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    th, td {
-      padding: 10px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-    }
-    th {
-      color: #555;
-      font-weight: 600;
-    }
-    tbody tr:hover {
-      background-color: #f9fafc;
-      cursor: pointer;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+    th { color: #555; font-weight: 600; }
+    tbody tr:hover { background-color: #f9fafc; }
     .empty-row td {
       color: #999;
       font-style: italic;
       text-align: center;
     }
-
-    #routeResult {
-      margin-top: 12px;
-      min-height: 24px;
-      font-weight: 600;
+    .delete-cell { width: 40px; text-align: center; padding: 8px !important; }
+    .delete-btn {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+      text-align: center;
+      color: #2e7d32;
+      font-weight: bold;
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 50%;
+      transition: background 0.2s, transform 0.1s;
     }
-
-    /* Toggle Switch */
+    .delete-btn:hover {
+      background-color: #e8f5e9;
+      transform: scale(1.1);
+    }
+    #routeResult { margin-top: 12px; min-height: 24px; font-weight: 600; }
     .toggle-switch {
       display: flex;
       width: 100%;
@@ -186,8 +150,6 @@
       background-color: #2e7d32;
       color: white;
     }
-
-    /* Footer */
     footer {
       background-color: #2e7d32;
       color: white;
@@ -197,8 +159,6 @@
       margin-top: auto;
       box-shadow: 0 -4px 8px rgba(255, 215, 0, 0.4);
     }
-
-    /* Плавное уведомление */
     #notification {
       position: fixed;
       bottom: 20px;
@@ -238,28 +198,47 @@
       background: #2e7d32;
       transition: width 10s linear;
     }
-
-    /* Адрес в таблице — компактный */
     td:nth-child(8) {
       max-width: 150px;
       word-break: break-word;
       font-size: 12px;
     }
+    #savedRoutesList {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .saved-route-item {
+      cursor: pointer;
+      padding: 10px;
+      margin-bottom: 5px;
+      border-radius: 4px;
+      border-bottom: 1px solid #eee;
+      transition: background 0.2s;
+    }
+    .saved-route-item:hover {
+      background-color: #f5f5f5;
+    }
+    .saved-route-item.active {
+      background-color: #e8f5e9;
+      border-left: 3px solid #2e7d32;
+    }
   </style>
 </head>
 <body>
-
   <header>
-    Планировщик маршрута — GNN + OpenStreetMap
+    <div class="header-content">
+      <span>Планировщик маршрута — GNN + OpenStreetMap</span>
+      <div id="authPanel">
+        <button id="loginBtn" style="background: none; border: none; color: white; cursor: pointer; font-weight: 600;">Войти</button>
+      </div>
+    </div>
   </header>
-
   <div class="main-content">
     <div class="container">
       <div class="left-column">
         <div class="map-section">
           <div id="map"></div>
         </div>
-
         <div class="card">
           <h2>Список клиентов</h2>
           <table id="clientsTable">
@@ -273,26 +252,24 @@
                 <th>Обед кон.</th>
                 <th>Уровень</th>
                 <th>Адрес объекта</th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="clientsList">
               <tr class="empty-row">
-                <td colspan="8">Нет добавленных клиентов</td>
+                <td colspan="9">Нет добавленных клиентов</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-
       <div class="form-section">
         <div class="card">
           <h2>Добавить клиента</h2>
-
           <div class="toggle-switch">
             <div class="toggle-option active" data-mode="manual">Вручную</div>
             <div class="toggle-option" data-mode="csv">Из CSV</div>
           </div>
-
           <form id="clientForm" style="display: block;">
             <div class="form-group">
               <label for="lat">Географическая широта</label>
@@ -332,7 +309,6 @@
             </div>
             <button type="submit">Добавить на карту</button>
           </form>
-
           <div id="csvUploadSection" style="display: none; margin-top: 16px;">
             <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
               Поддерживается CSV из Excel (включая кодировку Windows-1251).
@@ -341,8 +317,6 @@
             <button type="button" id="uploadCsvBtn">Загрузить клиентов</button>
           </div>
         </div>
-
-        <!-- Выбор алгоритма -->
         <div class="card">
           <h2>Тип маршрута</h2>
           <div class="toggle-switch">
@@ -350,30 +324,31 @@
             <div class="toggle-option" data-algo="tsp">Коммивояжёр</div>
           </div>
         </div>
-
         <div class="card">
           <h2>Маршрут</h2>
           <button id="buildRouteBtn" type="button" disabled>Построить маршрут</button>
           <p id="routeResult"></p>
+          <button id="saveRouteBtn" type="button" disabled style="margin-top: 12px; background-color: #1976d2;">Сохранить маршрут</button>
+        </div>
+        <div class="card" id="myRoutesCard" style="display: none;">
+          <h2>Мои маршруты</h2>
+          <div id="savedRoutesList">
+            <p id="noSavedRoutes">Нет сохранённых маршрутов</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
-
   <footer>
     © 2025 Планировщик маршрутов | GNN + OpenStreetMap
   </footer>
-
-  <!-- Плавающее уведомление -->
   <div id="notification">
     <div class="content">✅ Маршрут успешно построен!</div>
     <div class="progress-bar-container">
       <div class="progress-bar" id="progressBar"></div>
     </div>
   </div>
-
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
   <script>
     const originalTitle = document.title;
     const map = L.map('map').setView([55.751244, 37.618423], 10);
@@ -402,7 +377,6 @@
     const notification = document.getElementById('notification');
     const progressBar = document.getElementById('progressBar');
 
-    // --- Переключатель ввода данных ---
     document.querySelectorAll('.toggle-option[data-mode]').forEach(option => {
       option.addEventListener('click', () => {
         document.querySelectorAll('.toggle-option[data-mode]').forEach(opt => opt.classList.remove('active'));
@@ -413,7 +387,6 @@
       });
     });
 
-    // --- Переключатель алгоритма ---
     let currentAlgorithm = 'gnn';
     document.querySelectorAll('.toggle-option[data-algo]').forEach(option => {
       option.addEventListener('click', () => {
@@ -428,7 +401,6 @@
       return h * 60 + m;
     }
 
-    // --- Ручной ввод ---
     clientForm.addEventListener('submit', function(e) {
       e.preventDefault();
       const lat = parseFloat(document.getElementById('lat').value);
@@ -437,7 +409,7 @@
       const workStart = document.getElementById('workStart').value;
       const workEnd = document.getElementById('workEnd').value;
       const lunchStart = document.getElementById('lunchStart').value;
-      const lunchEnd = document.getElementById('lunchEnd').value();
+      const lunchEnd = document.getElementById('lunchEnd').value;
       const clientLevel = document.getElementById('clientLevel').value;
 
       if (!address) { alert('Пожалуйста, укажите адрес.'); return; }
@@ -472,23 +444,19 @@
       buildRouteBtn.disabled = clientsData.length < 2;
     });
 
-    // --- Отображение клиентов в таблице ---
     function renderClientsTable() {
       clientsList.innerHTML = '';
       if (clientsData.length === 0) {
-        clientsList.innerHTML = '<tr class="empty-row"><td colspan="8">Нет добавленных клиентов</td></tr>';
+        clientsList.innerHTML = '<tr class="empty-row"><td colspan="9">Нет добавленных клиентов</td></tr>';
         return;
       }
-
       clientsData.forEach((client, index) => {
         const workStart = String(Math.floor(client.work_start / 60)).padStart(2, '0') + ':' + String(client.work_start % 60).padStart(2, '0');
         const workEnd = String(Math.floor(client.work_end / 60)).padStart(2, '0') + ':' + String(client.work_end % 60).padStart(2, '0');
         const lunchStart = String(Math.floor(client.lunch_start / 60)).padStart(2, '0') + ':' + String(client.lunch_start % 60).padStart(2, '0');
         const lunchEnd = String(Math.floor(client.lunch_end / 60)).padStart(2, '0') + ':' + String(client.lunch_end % 60).padStart(2, '0');
         const levelText = client.is_vip ? 'VIP' : 'Обычный';
-
         const row = document.createElement('tr');
-        row.dataset.index = index;
         row.innerHTML = `
           <td>${client.lat.toFixed(6)}</td>
           <td>${client.lon.toFixed(6)}</td>
@@ -498,38 +466,28 @@
           <td>${lunchEnd}</td>
           <td>${levelText}</td>
           <td>${client.address}</td>
+          <td class="delete-cell"><span class="delete-btn" data-index="${index}">×</span></td>
         `;
         clientsList.appendChild(row);
       });
 
-      // Добавляем обработчик клика на строки
-      clientsList.querySelectorAll('tr').forEach(row => {
-        row.addEventListener('click', () => {
-          const index = parseInt(row.dataset.index);
-          if (isNaN(index)) return;
-
-          if (confirm(`Удалить клиента?\nАдрес: ${clientsData[index].address}`)) {
-            // Удаляем маркер с карты
-            if (markers[index]) {
-              map.removeLayer(markers[index]);
-            }
-            // Удаляем из массивов
-            clientsData.splice(index, 1);
-            markers.splice(index, 1);
-            // Перерисовываем таблицу
-            renderClientsTable();
-            // Обновляем кнопку
-            buildRouteBtn.disabled = clientsData.length < 2;
-          }
+      clientsList.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const index = parseInt(btn.dataset.index);
+          if (isNaN(index) || index < 0 || index >= clientsData.length) return;
+          if (markers[index]) map.removeLayer(markers[index]);
+          clientsData.splice(index, 1);
+          markers.splice(index, 1);
+          renderClientsTable();
+          buildRouteBtn.disabled = clientsData.length < 2;
         });
       });
     }
 
-    // --- Загрузка CSV: данные берутся по индексам, без проверки заголовков ---
     uploadCsvBtn.addEventListener('click', async () => {
       const file = csvFileInput.files[0];
       if (!file) { alert('Выберите CSV-файл.'); return; }
-
       const arrayBuffer = await file.arrayBuffer();
       let text;
       try {
@@ -539,7 +497,6 @@
         const decoder = new TextDecoder('utf-8');
         text = decoder.decode(arrayBuffer);
       }
-
       const lines = text.trim().split('\n');
       if (lines.length < 2) { alert('Файл пуст или содержит только заголовок.'); return; }
 
@@ -547,11 +504,9 @@
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
-
         const row = [];
         let current = '';
         let inQuotes = false;
-
         for (let j = 0; j < line.length; j++) {
           const char = line[j];
           if (char === '"' && !inQuotes) {
@@ -569,9 +524,7 @@
           }
         }
         row.push(current.trim());
-
         if (row.length < 9) continue;
-
         let address = row[1];
         const lat = parseFloat(row[2]);
         const lon = parseFloat(row[3]);
@@ -580,24 +533,16 @@
         const ls = row[6];
         const le = row[7];
         let levelStr = row[8];
-
-        if (address.startsWith('"') && address.endsWith('"')) {
-          address = address.slice(1, -1);
-        }
-        if (levelStr.startsWith('"') && levelStr.endsWith('"')) {
-          levelStr = levelStr.slice(1, -1);
-        }
-
-        if (!address || isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) continue;
+        if (address.startsWith('"') && address.endsWith('"')) address = address.slice(1, -1);
+        if (levelStr.startsWith('"') && levelStr.endsWith('"')) levelStr = levelStr.slice(1, -1);
+        if (!address || isNaN(lat) || isNaN(lon)) continue;
         if (ls >= le || ws >= we) continue;
-
         let levelText = 'Обычный';
         let is_vip = 0;
         if (levelStr === 'VIP') {
           levelText = 'VIP';
           is_vip = 1;
         }
-
         newClients.push({
           lat, lon, address,
           workStart: ws,
@@ -625,7 +570,6 @@
           lunch_start: timeToMinutes(c.lunchStart),
           lunch_end: timeToMinutes(c.lunchEnd)
         });
-
         const popup = `<b>Клиент (${c.levelText})</b><br>Адрес: ${c.address}<br>Широта: ${c.lat.toFixed(6)}<br>Долгота: ${c.lon.toFixed(6)}<br>Рабочий день: ${c.workStart}–${c.workEnd}<br>Обед: ${c.lunchStart}–${c.lunchEnd}`;
         const m = L.marker([c.lat, c.lon], { icon: redIcon }).addTo(map).bindPopup(popup);
         markers.push(m);
@@ -637,7 +581,6 @@
       alert(`✅ Успешно добавлено клиентов: ${newClients.length}`);
     });
 
-    // --- Очистка маршрута ---
     function clearRoute() {
       if (window.currentRouteLayers) window.currentRouteLayers.forEach(l => map.removeLayer(l));
       if (window.numberedMarkers) window.numberedMarkers.forEach(m => map.removeLayer(m));
@@ -645,86 +588,319 @@
       window.numberedMarkers = [];
     }
 
-    // --- Уведомление ---
-    function showSuccessNotification(message = '✅ Маршрут успешно построен!') {
-      document.title = message;
+    function showNotification(message = '✅ Маршрут успешно построен!', isSuccess = true) {
       notification.querySelector('.content').textContent = message;
-
+      notification.className = `show ${isSuccess ? '' : 'error'}`;
+      document.title = message;
       progressBar.style.transition = 'none';
       progressBar.style.width = '100%';
       void progressBar.offsetWidth;
       progressBar.style.transition = 'width 10s linear';
       progressBar.style.width = '0%';
-
-      notification.classList.add('show');
-
       setTimeout(() => {
         notification.classList.remove('show');
-        setTimeout(() => {
-          document.title = originalTitle;
-        }, 400);
-      }, 10000);
+        setTimeout(() => { document.title = originalTitle; }, 400);
+      }, 5000);
     }
 
-    // --- Построение маршрута ---
-    buildRouteBtn.addEventListener('click', async () => {
-      routeResult.textContent = 'Расчёт маршрута...';
-      routeResult.style.color = '#2e7d32';
-      clearRoute();
+    let currentUser = null;
+    let currentRouteData = null;
 
-      const endpoint = currentAlgorithm === 'gnn' ? '/route' : '/comy_voyager';
-      const algoName = currentAlgorithm === 'gnn' ? 'GNN' : 'Коммивояжёр';
+    function updateAuthUI() {
+      const authPanel = document.getElementById('authPanel');
+      if (currentUser) {
+        authPanel.innerHTML = `
+          <span style="color: white; margin-right: 12px;">Привет, ${currentUser.name}!</span>
+          <button id="logoutBtn" style="background: none; border: none; color: white; cursor: pointer; font-weight: 600;">Выйти</button>
+        `;
+        document.getElementById('myRoutesCard').style.display = 'block';
+        loadSavedRoutes();
+      } else {
+        authPanel.innerHTML = `<button id="loginBtn" style="background: none; border: none; color: white; cursor: pointer; font-weight: 600;">Войти</button>`;
+        document.getElementById('myRoutesCard').style.display = 'none';
+        document.getElementById('saveRouteBtn').disabled = true;
+      }
+    }
 
-      try {
-        const routeRes = await fetch(`http://127.0.0.1:8080${endpoint}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nodes: clientsData })
+    function checkAuth() {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        fetch('http://127.0.0.1:8080/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => {
+          if (res.ok) return res.json();
+          throw new Error('auth expired');
+        })
+        .then(data => {
+          currentUser = {
+            name: data.name || data.email.split('@')[0],
+            user_id: data.user_id,
+            token
+          };
+          updateAuthUI();
+          document.getElementById('saveRouteBtn').disabled = false;
+        })
+        .catch(() => {
+          localStorage.removeItem('authToken');
+          currentUser = null;
+          updateAuthUI();
         });
-        if (!routeRes.ok) throw new Error(`${algoName}: ${await routeRes.text()}`);
-        const { route, total_time_minutes } = await routeRes.json();
+      } else {
+        updateAuthUI();
+      }
+    }
 
+    document.getElementById('authPanel').addEventListener('click', (e) => {
+      if (e.target.id === 'loginBtn') {
+        window.location.href = 'auth.html';
+      } else if (e.target.id === 'logoutBtn') {
+        localStorage.removeItem('authToken');
+        currentUser = null;
+        clearRoute();
+        markers.forEach(m => map.removeLayer(m));
+        markers.length = 0;
+        clientsData.length = 0;
+        renderClientsTable();
+        routeResult.textContent = '';
+        updateAuthUI();
+        showNotification('Вы вышли из аккаунта');
+      }
+    });
+
+    async function loadSavedRoutes() {
+      if (!currentUser) return;
+      const list = document.getElementById('savedRoutesList');
+      try {
+        const res = await fetch('http://127.0.0.1:8080/my-routes', {
+          headers: { 'Authorization': `Bearer ${currentUser.token}` }
+        });
+        if (!res.ok) throw new Error('Ошибка загрузки маршрутов');
+        const routes = await res.json();
+        if (routes.length === 0) {
+          list.innerHTML = '<p id="noSavedRoutes">Нет сохранённых маршрутов</p>';
+          return;
+        }
+        list.innerHTML = routes.map(r => `
+          <div class="saved-route-item" data-route-id="${r.id}">
+            <strong>${r.route_name}</strong><br>
+            <span style="font-size: 13px; color: #666;">
+              Алгоритм: ${r.algorithm_used === 'gnn' ? 'GNN' : 'Коммивояжёр'} | 
+              Время: ${r.total_time_minutes.toFixed(1)} мин<br>
+              <small>${new Date(r.created_at).toLocaleString('ru-RU')}</small>
+            </span>
+          </div>
+        `).join('');
+
+        document.querySelectorAll('.saved-route-item').forEach(item => {
+          item.addEventListener('click', async () => {
+            const routeId = item.dataset.routeId;
+            await loadRouteById(routeId);
+            item.classList.add('active');
+            setTimeout(() => item.classList.remove('active'), 1000);
+          });
+        });
+      } catch (err) {
+        console.error('Ошибка маршрутов:', err);
+        list.innerHTML = `<p style="color: #d32f2f; padding: 10px;">❌ ${err.message}</p>`;
+      }
+    }
+
+    async function loadRouteById(routeId) {
+      try {
+        clearRoute();
+        const token = currentUser.token;
+        const res = await fetch(`http://127.0.0.1:8080/route/${routeId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Маршрут не загружен');
+        const routeData = await res.json();
+
+        markers.forEach(m => map.removeLayer(m));
+        markers.length = 0;
+        clientsData.length = 0;
+
+        routeData.nodes.forEach(client => {
+          if (typeof client.work_start === 'string') {
+            client.work_start = timeToMinutes(client.work_start);
+            client.work_end = timeToMinutes(client.work_end);
+            client.lunch_start = timeToMinutes(client.lunch_start);
+            client.lunch_end = timeToMinutes(client.lunch_end);
+          }
+          clientsData.push(client);
+          const levelText = client.is_vip ? 'VIP' : 'Обычный';
+          const workStart = String(Math.floor(client.work_start / 60)).padStart(2, '0') + ':' + String(client.work_start % 60).padStart(2, '0');
+          const workEnd = String(Math.floor(client.work_end / 60)).padStart(2, '0') + ':' + String(client.work_end % 60).padStart(2, '0');
+          popupContent = `<b>Клиент (${levelText})</b><br>Адрес: ${client.address}<br>Широта: ${client.lat.toFixed(6)}<br>Долгота: ${client.lon.toFixed(6)}<br>Рабочий день: ${workStart}–${workEnd}<br>Обед: ${workStart}–${workEnd}`;
+          const marker = L.marker([client.lat, client.lon], { icon: redIcon }).addTo(map).bindPopup(popupContent);
+          markers.push(marker);
+        });
+
+        renderClientsTable();
+        const route = routeData.route_order;
+        const total_time = routeData.total_time_minutes;
+        const addresses = routeData.addresses;
+        const algo = routeData.algorithm_used;
+
+        // 🔑 Авторизация в /route-geometry
         const geomRes = await fetch('http://127.0.0.1:8080/route-geometry', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({ nodes: clientsData })
         });
-        if (!geomRes.ok) throw new Error(`Геометрия: ${await geomRes.text()}`);
-        const geometrySegments = await geomRes.json();
 
-        window.currentRouteLayers = geometrySegments.map(seg => {
-          const pl = L.polyline(seg, { color: '#2e7d32', weight: 5, opacity: 0.9 }).addTo(map);
-          return pl;
-        });
+        if (!geomRes.ok) throw new Error('Не удалось получить геометрию маршрута');
+        const geometry = await geomRes.json();
 
-        window.numberedMarkers = route.map((nodeIdx, order) => {
-          const { lat, lon } = clientsData[nodeIdx];
+        window.currentRouteLayers = geometry.map(seg =>
+          L.polyline(seg, { color: '#2e7d32', weight: 5, opacity: 0.9 }).addTo(map)
+        );
+
+        window.numberedMarkers = route.map((idx, order) => {
+          const { lat, lon } = clientsData[idx];
           const icon = L.divIcon({
             html: `<div style="background:#2e7d32;color:white;font-weight:bold;width:24px;height:24px;border:2px solid #ffcc00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;">${order}</div>`,
-            iconSize: [24,24],
+            iconSize: [24, 24],
             className: ''
           });
           return L.marker([lat, lon], { icon }).addTo(map);
         });
 
-        if (window.currentRouteLayers.length > 0) {
+        if (window.currentRouteLayers.length) {
           const bounds = L.latLngBounds([]);
           window.currentRouteLayers.forEach(pl => bounds.extend(pl.getBounds()));
           map.fitBounds(bounds);
         }
 
-        routeResult.innerHTML = `✅ Маршрут (${algoName}) построен!<br>Время в пути: <strong>${total_time_minutes.toFixed(1)} мин</strong>`;
+        routeResult.innerHTML = `✅ Маршрут загружен!<br>Время: <strong>${total_time.toFixed(1)} мин</strong>`;
         routeResult.style.color = '#2e7d32';
 
-        showSuccessNotification(`✅ Маршрут (${algoName}) успешно построен!`);
+        currentRouteData = { nodes: clientsData, route_order: route, addresses, total_time_minutes: total_time, algorithm_used: algo };
+        showNotification('✅ Маршрут успешно загружен!');
+      } catch (e) {
+        console.error('Ошибка загрузки маршрута:', e);
+        showNotification(`❌ ${e.message}`, false);
+      }
+    }
 
-      } catch (error) {
-        console.error('Ошибка:', error);
-        routeResult.textContent = `❌ Ошибка: ${error.message}`;
+    document.getElementById('saveRouteBtn').addEventListener('click', async () => {
+      if (!currentUser || !currentRouteData) return;
+      const name = prompt('Название маршрута:') || null;
+      const payload = {
+        route_name: name,
+        nodes: currentRouteData.nodes,
+        route_order: currentRouteData.route_order,
+        addresses: currentRouteData.addresses,
+        total_time_minutes: currentRouteData.total_time_minutes,
+        algorithm_used: currentRouteData.algorithm_used
+      };
+      try {
+        const res = await fetch('http://127.0.0.1:8080/save-route', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentUser.token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          showNotification('✅ Маршрут сохранён!');
+          loadSavedRoutes();
+        } else {
+          throw new Error('Сервер отклонил запрос');
+        }
+      } catch (e) {
+        showNotification(`❌ ${e.message}`, false);
+      }
+    });
+
+    buildRouteBtn.addEventListener('click', async () => {
+      if (clientsData.length < 2) {
+        alert('Добавьте как минимум 2 клиента.');
+        return;
+      }
+      routeResult.textContent = 'Расчёт маршрута…';
+      routeResult.style.color = '#2e7d32';
+      clearRoute();
+
+      const endpoint = currentAlgorithm === 'gnn' ? '/route' : '/comy_voyager';
+      const algoName = currentAlgorithm === 'gnn' ? 'GNN' : 'Коммивояжёр';
+      const token = currentUser?.token || '';
+
+      try {
+        const routeRes = await fetch(`http://127.0.0.1:8080${endpoint}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ nodes: clientsData })
+        });
+
+        if (!routeRes.ok) {
+          const err = await routeRes.json().catch(() => ({}));
+          throw new Error(err.detail || 'Ошибка расчёта маршрута');
+        }
+
+        const { route, total_time_minutes, addresses } = await routeRes.json();
+
+        const geomRes = await fetch('http://127.0.0.1:8080/route-geometry', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ nodes: clientsData })
+        });
+
+        if (!geomRes.ok) {
+          const err = await geomRes.json().catch(() => ({}));
+          throw new Error(err.detail || 'Ошибка геометрии маршрута');
+        }
+
+        const geometry = await geomRes.json();
+
+        window.currentRouteLayers = geometry.map(seg =>
+          L.polyline(seg, { color: '#2e7d32', weight: 5, opacity: 0.9 }).addTo(map)
+        );
+
+        window.numberedMarkers = route.map((idx, order) => {
+          const { lat, lon } = clientsData[idx];
+          const icon = L.divIcon({
+            html: `<div style="background:#2e7d32;color:white;font-weight:bold;width:24px;height:24px;border:2px solid #ffcc00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;">${order}</div>`,
+            iconSize: [24, 24],
+            className: ''
+          });
+          return L.marker([lat, lon], { icon }).addTo(map);
+        });
+
+        if (window.currentRouteLayers.length) {
+          const bounds = L.latLngBounds([]);
+          window.currentRouteLayers.forEach(pl => bounds.extend(pl.getBounds()));
+          map.fitBounds(bounds);
+        }
+
+        routeResult.innerHTML = `✅ Маршрут (${algoName}) построен!<br>Время: <strong>${total_time_minutes.toFixed(1)} мин</strong>`;
+        currentRouteData = {
+          nodes: clientsData,
+          route_order: route,
+          addresses,
+          total_time_minutes,
+          algorithm_used: currentAlgorithm
+        };
+        document.getElementById('saveRouteBtn').disabled = !currentUser;
+        showNotification(`✅ Маршрут (${algoName}) успешно построен!`);
+      } catch (e) {
+        console.error('Ошибка маршрутизации:', e);
+        routeResult.innerHTML = `❌ ${e.message}`;
         routeResult.style.color = '#d32f2f';
       }
     });
-  </script>
 
+    checkAuth();
+  </script>
 </body>
 </html>
