@@ -111,8 +111,14 @@ def adjust_balance(connection, account_id, delta):
 def demo_savepoint(connection):
     try:
         with connection.cursor() as cursor:
+            
             cursor.execute("SAVEPOINT sp1;")
             cursor.execute("UPDATE account SET balance = balance * 1.1;")
+            cursor.execute("RELEASE SAVEPOINT sp1;")
+            
+            cursor.execute("SAVEPOINT sp2;")
+            cursor.execute("SELECT")
+            cursor.execute("ROLLBACK TO SAVEPOINT sp2;")
 
             print("  ➤ Балансы увеличены на 10%.")
             print_balances(connection)
