@@ -144,6 +144,55 @@ def demo_savepoint(connection):
         connection.rollback()
         print(f"❌ Критическая ошибка в SAVEPOINT-сценарии: {e}")
 
+
+
+def custom_cursor_execute(q:str, cursor) -> str:
+    try:
+        unique_id = "sp" + str(random.randint(0, 1000000))
+        
+        cursor.execute(f"SAVEPOINT {unique_id};")
+        cursor.execute(q)
+        
+        return unique_id
+    except:
+        return None
+    
+def demo_savepoint2(connection, cursor) -> list[str]:
+    sp_list:list[str] = []
+    try:
+            
+        # custom_cursor_execute("SAVEPOINT sp1;")
+        sp_list.append(custom_cursor_execute("UPDATE account SET balance = balance * 1.1;", cursor))
+        # cursor.execute("RELEASE SAVEPOINT sp1;")
+        
+        # cursor.execute("SAVEPOINT sp2;")
+        sp_list.append(custom_cursor_execute("SELECT", cursor))
+        # cursor.execute("ROLLBACK TO SAVEPOINT sp2;")
+
+        print("  ➤ Балансы увеличены на 10%.")
+        print_balances(connection)
+
+        # 🔥 Случайный сбой с 50% шансом — имитируем ошибку после SAVEPOINT
+        maybe_raise()
+
+        # Если исключения не было — фиксируем
+        print("✅ SAVEPOINT-сценарий: сбой не произошёл. Обновление зафиксировано.")
+        print_balances(connection)
+
+    except RuntimeError as e:
+        # Откатываем только к SAVEPOINT
+        
+        cursor.execute(f"ROLLBACK TO SAVEPOINT {sp_list[0]};")
+        print("🔄 Сбой в SAVEPOINT-сценарии. Откат к точке сохранения выполнен.")
+        print("✅ Транзакция успешно завершена после отката.")
+        print_balances(connection)
+
+    except Error as e:
+        connection.rollback()
+        print(f"❌ Критическая ошибка в SAVEPOINT-сценарии: {e}")
+    
+    return sp_list
+
 def isolated_transfer_demo(connection, level_code, level_name):
     try:
         old_level = connection.isolation_level
@@ -182,6 +231,7 @@ def main():
             print("5. REPEATABLE READ (+100 к счёту)")
             print("6. SERIALIZABLE (+100 к счёту)")
             print("7. Показать балансы")
+            print("8. Динамические savepoints")
             print("0. Выйти")
             choice = input("Ваш выбор: ").strip()
 
@@ -214,6 +264,14 @@ def main():
 
             elif choice == "7":
                 print_balances(connection)
+            elif choice == "8":
+                with connection.cursor() as cursor:
+                    sp_list = demo_savepoint2(connection=connection, cursor=cursor)
+                    print(sp_list)
+                    # for unique_id in sp_list:
+                    #     cursor.execute(f"RELEASE SAVEPOINT {unique_id};")
+                connection.commit()
+                    
 
             elif choice == "0":
                 break
